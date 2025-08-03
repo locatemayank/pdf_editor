@@ -1,0 +1,338 @@
+/* CSS Reset to prevent external interference */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color-rendering: auto;
+    forced-color-adjust: none;
+}
+
+/* Bespoke styling with orange theme, red hue for delete toggles, fixed image width, controlled waitbars, smooth delete/reorder animations, page numbers, zoom, and dark mode */
+:root {
+    --primary: #e87a3e; /* Vibrant orange */
+    --accent: #f4a261; /* Lighter orange */
+    --blue-hue: #3b82f6; /* Blue, not used unless specified */
+    --delete-hue: #ef4444; /* Explicit red for delete toggles */
+    --background: #f5f5e8; /* Soft cream */
+    --text: #2d2d2d; /* Charcoal gray */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(232, 122, 62, 0.3);
+    --page-number-bg: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] {
+    --background: #1a1a1a; /* Dark gray */
+    --text: #e0e0e0; /* Light gray */
+    --primary: #f4a261; /* Lighter orange for contrast */
+    --accent: #ffb085; /* Even lighter orange */
+    --blue-hue: #60a5fa; /* Lighter blue, not used unless specified */
+    --delete-hue: #f87171; /* Lighter red for dark mode */
+    --glass-bg: rgba(255, 255, 255, 0.00);
+    --glass-border: rgba(244, 162, 97, 0.2);
+    --page-number-bg: rgba(0, 0, 0, 0.5); /* Darker background for page numbers */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 1.5rem;
+    border: 2px dashed var(--primary);
+    border-radius: 50%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite ease-in-out;
+    position: relative;
+}
+
+.drop-zone p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    margin: 0;
+    padding: 0 1.5rem;
+    line-height: 1.5;
+    max-width: 200px;
+}
+
+.drop-zone.active {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 20px rgba(244, 162, 97, 0.5);
+}
+
+.drop-zone input {
+    display: none;
+}
+
+.drop-zone button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    margin-top: 1rem;
+    color: var(--text);
+}
+
+.drop-zone button:hover {
+    transform: scale(1.1);
+    color: var(--primary);
+}
+
+.waitbar {
+    width: 200px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    position: absolute;
+    bottom: 60px; /* Unified position for all waitbars */
+}
+
+.waitbar.hidden {
+    display: none;
+}
+
+.waitbar-fill {
+    width: 0;
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.waitbar-fill.active {
+    transition: width 0.3s ease;
+}
+
+.waitbar-status {
+    position: absolute;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    width: 200px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    padding: 0.2rem;
+    border-radius: 4px;
+    bottom: 40px; /* Positioned below waitbar */
+    z-index: 10; /* Ensure readability over drop-zone */
+}
+
+.waitbar-status.hidden {
+    display: none;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.button-group button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text);
+}
+
+.button-group button:hover {
+    transform: scale(1.1);
+    color: var(--primary);
+}
+
+.zoom-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.zoom-control.hidden {
+    display: none;
+}
+
+.zoom-control button {
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text);
+}
+
+.zoom-control button:hover {
+    transform: scale(1.1);
+    color: var(--primary);
+}
+
+.zoom-control input[type="range"] {
+    width: 100px;
+    accent-color: var(--primary);
+}
+
+#state-debug {
+    font-size: 0.9rem;
+    color: var(--text);
+    opacity: 0.8;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.page-grid {
+    display: grid;
+    gap: 1rem;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.page-item {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    width: calc(250px * var(--zoom, 1));
+}
+
+.page-item.deleting {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.page-item:hover {
+    transform: scale(1.02);
+    border-color: var(--accent);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.page-item img {
+    width: 100%;
+    max-width: calc(250px * var(--zoom, 1));
+    height: auto;
+    max-height: calc(350px * var(--zoom, 1));
+    border-radius: 0.25rem;
+    object-fit: contain;
+}
+
+.page-number {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    font-size: calc(1.5rem * var(--zoom, 1));
+    font-weight: 600;
+    color: var(--text);
+    background: var(--page-number-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.delete-toggle {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: inline-block;
+    width: calc(40px * var(--zoom, 1));
+    height: calc(20px * var(--zoom, 1));
+}
+
+.delete-checkbox {
+    display: none;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: calc(20px * var(--zoom, 1));
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: calc(16px * var(--zoom, 1));
+    width: calc(16px * var(--zoom, 1));
+    left: calc(2px * var(--zoom, 1));
+    bottom: calc(2px * var(--zoom, 1));
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.delete-checkbox:checked + .toggle-slider {
+    background-color: var(--delete-hue); /* Explicitly use red hue */
+    box-shadow: 0 0 8px var(--delete-hue);
+}
+
+.delete-checkbox:checked + .toggle-slider:before {
+    transform: translateX(calc(20px * var(--zoom, 1)));
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.9); }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(244, 162, 97, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(244, 162, 97, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(244, 162, 97, 0); }
+}
