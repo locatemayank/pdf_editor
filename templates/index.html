@@ -5,31 +5,18 @@
     <title>PDF Editor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        html, body, * {
-            color-rendering: auto;
-            forced-color-adjust: none;
-        }
-    </style>
 </head>
 <body>
     <main class="container">
-        <h1>Reorder and Delete Pages</h1>
+        <h1>PDF Editor</h1>
+
+        <!-- Drag-and-Drop Uploader -->
         <div id="drop-zone" class="drop-zone">
             <p>Drop your PDF here or click to browse</p>
-            <div id="upload-waitbar" class="waitbar hidden">
-                <div class="waitbar-fill"></div>
+            <div id="progress-bar" class="progress-bar hidden">
+                <div class="progress-fill"></div>
             </div>
-            <span id="upload-status" class="waitbar-status hidden">Uploading...</span>
-            <div id="processing-waitbar" class="waitbar hidden">
-                <div class="waitbar-fill"></div>
-            </div>
-            <span id="processing-status" class="waitbar-status hidden">Processing...</span>
-            <div id="download-waitbar" class="waitbar hidden">
-                <div class="waitbar-fill"></div>
-            </div>
-            <span id="download-status" class="waitbar-status hidden">Downloading...</span>
-            <input type="file" id="pdf-upload" accept="application/pdf" name="pdf">
+            <input type="file" id="pdf-upload" accept="application/pdf">
             <button id="browse-btn" title="Browse Files">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -38,6 +25,8 @@
                 </svg>
             </button>
         </div>
+
+        <!-- Buttons -->
         <div class="button-group">
             <button id="theme-toggle" title="Toggle Dark Mode">
                 <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -69,6 +58,8 @@
                 </svg>
             </button>
         </div>
+
+        <!-- Zoom Control -->
         <div id="zoom-control" class="zoom-control hidden">
             <button id="zoom-icon" title="Zoom">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -80,9 +71,14 @@
             </button>
             <input type="range" id="zoom-slider" min="100" max="200" value="100">
         </div>
+
+        <!-- Debug State -->
         <div id="state-debug"></div>
+
+        <!-- Page Grid -->
         <div id="page-grid" class="page-grid"></div>
     </main>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
         let pageOrder = [];
@@ -90,15 +86,6 @@
         let originalFile = null;
         let previews = [];
         let zoomLevel = 100;
-        let sortableInstance = null;
-
-        // Ensure all waitbars and status texts are hidden on load
-        document.getElementById('upload-waitbar').classList.add('hidden');
-        document.getElementById('processing-waitbar').classList.add('hidden');
-        document.getElementById('download-waitbar').classList.add('hidden');
-        document.getElementById('upload-status').classList.add('hidden');
-        document.getElementById('processing-status').classList.add('hidden');
-        document.getElementById('download-status').classList.add('hidden');
 
         // Theme Toggle
         const themeToggle = document.getElementById('theme-toggle');
@@ -109,29 +96,21 @@
             themeIcon.innerHTML = theme === 'dark' ?
                 `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>` :
                 `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
-            console.log(`Applied theme: ${theme}`);
         };
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme);
-
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             setTheme(currentTheme);
+            console.log(`Switched to ${currentTheme} mode`);
         });
 
         // Drag-and-Drop Uploader
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('pdf-upload');
         const browseBtn = document.getElementById('browse-btn');
-        const uploadWaitbar = document.getElementById('upload-waitbar');
-        const uploadFill = document.querySelector('#upload-waitbar .waitbar-fill');
-        const uploadStatus = document.getElementById('upload-status');
-        const processingWaitbar = document.getElementById('processing-waitbar');
-        const processingFill = document.querySelector('#processing-waitbar .waitbar-fill');
-        const processingStatus = document.getElementById('processing-status');
-        const downloadWaitbar = document.getElementById('download-waitbar');
-        const downloadFill = document.querySelector('#download-waitbar .waitbar-fill');
-        const downloadStatus = document.getElementById('download-status');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.querySelector('.progress-fill');
         const zoomSlider = document.getElementById('zoom-slider');
         const zoomControl = document.getElementById('zoom-control');
 
@@ -150,87 +129,48 @@
             const file = e.dataTransfer.files[0];
             if (file && file.type === 'application/pdf') {
                 fileInput.files = e.dataTransfer.files;
-                handleUpload(new File([file], file.name, { type: file.type })); // Clone file
+                handleUpload(file);
             }
         });
+
         browseBtn.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                    handleUpload(file);
-                    fileInput.value = ''; // Clear input to prevent stale references
-                }
+            if (file) handleUpload(file);
         });
 
         async function handleUpload(file) {
-            console.time('upload');
-            originalFile = file ? new File([file], file.name, { type: file.type }) : null; // Clone file to prevent reference issues
-            if (!originalFile) {
-                alert('No file selected. Please choose a PDF file.');
-                return;
-            }
-            // Reset all waitbars and status texts
-            uploadWaitbar.classList.add('hidden');
-            processingWaitbar.classList.add('hidden');
-            downloadWaitbar.classList.add('hidden');
-            uploadFill.style.width = '0%';
-            processingFill.style.width = '0%';
-            downloadFill.style.width = '0%';
-            uploadStatus.classList.add('hidden');
-            processingStatus.classList.add('hidden');
-            downloadStatus.classList.add('hidden');
-            // Show upload waitbar and status
-            requestAnimationFrame(() => {
-                uploadWaitbar.classList.remove('hidden');
-                uploadStatus.classList.remove('hidden');
-                uploadStatus.textContent = 'Uploading...';
-                uploadFill.classList.add('active');
-            });
-            // Simulate upload progress
-            let uploadProgress = 0;
-            const uploadInterval = setInterval(() => {
-                uploadProgress = Math.min(uploadProgress + 10, 100);
-                uploadFill.style.width = `${uploadProgress}%`;
-            }, 200);
+            originalFile = file;
+            progressBar.classList.remove('hidden');
+            progressFill.classList.add('active');
             const formData = new FormData();
             formData.append('pdf', file);
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
-                    body: formData,
-                    credentials: 'include' // Ensure cookies are sent
+                    body: formData
                 });
-                clearInterval(uploadInterval);
-                uploadFill.style.width = '100%';
-                uploadWaitbar.classList.add('hidden');
-                uploadFill.classList.remove('active');
-                uploadStatus.classList.add('hidden');
                 const data = await response.json();
                 if (data.error) {
-                    console.error('Upload failed:', data.error);
+                    console.error(data.error);
                     alert('Error uploading PDF: ' + data.error);
-                    console.timeEnd('upload');
                     return;
                 }
-                const sessionId = data.session_id;
-                previews = data.images || [];
-                pageOrder = Array.from({ length: data.total_pages }, (_, i) => i);
-                pagesToDelete = [];
-                console.log(`Upload successful: Session ID ${sessionId}, Pages: ${data.total_pages}, Images: ${previews.length}`);
-                console.timeEnd('upload');
-                // Progressive rendering
-                renderPages(data.total_pages);
+                previews = data.previews;
+                pageOrder = data.pageOrder;
+                pagesToDelete = data.pagesToDelete;
+                console.log(`Upload successful: ${previews.length} previews received`);
+                renderPages();
+                updateDebugState();
                 document.getElementById('download-btn').classList.remove('hidden');
-                zoomControl.classList.remove('hidden');
+                zoomControl.classList.remove('hidden'); // Show zoom control
             } catch (error) {
                 console.error('Upload error:', error);
                 alert('Error uploading PDF: ' + error.message);
-                clearInterval(uploadInterval);
-                uploadWaitbar.classList.add('hidden');
-                uploadFill.classList.remove('active');
-                uploadStatus.classList.add('hidden');
-                console.timeEnd('upload');
+            } finally {
+                progressBar.classList.add('hidden');
+                progressFill.classList.remove('active');
             }
         }
 
@@ -251,257 +191,113 @@
             document.getElementById('page-grid').innerHTML = '';
             document.getElementById('state-debug').innerHTML = '';
             document.getElementById('download-btn').classList.add('hidden');
-            zoomControl.classList.add('hidden');
+            zoomControl.classList.add('hidden'); // Hide zoom control
             document.getElementById('pdf-upload').value = '';
-            uploadWaitbar.classList.add('hidden');
-            processingWaitbar.classList.add('hidden');
-            downloadWaitbar.classList.add('hidden');
-            uploadFill.style.width = '0%';
-            processingFill.style.width = '0%';
-            downloadFill.style.width = '0%';
-            uploadStatus.classList.add('hidden');
-            processingStatus.classList.add('hidden');
-            downloadStatus.classList.add('hidden');
             console.log('Cleared state');
         });
 
         document.getElementById('download-btn').addEventListener('click', async () => {
             console.log('Before download:', { pageOrder, pagesToDelete });
-            uploadWaitbar.classList.add('hidden');
-            processingWaitbar.classList.add('hidden');
-            downloadWaitbar.classList.remove('hidden');
-            uploadStatus.classList.add('hidden');
-            processingStatus.classList.add('hidden');
-            downloadStatus.classList.remove('hidden');
-            downloadStatus.textContent = 'Downloading...';
-            downloadFill.classList.add('active');
-            downloadFill.style.width = '0%';
-            let downloadProgress = 0;
-            const downloadInterval = setInterval(() => {
-                downloadProgress = Math.min(downloadProgress + 10, 100);
-                downloadFill.style.width = `${downloadProgress}%`;
-            }, 200);
             try {
                 const response = await fetch('/modify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pageOrder, pagesToDelete })
                 });
-                clearInterval(downloadInterval);
-                downloadFill.style.width = '100%';
                 if (!response.ok) {
                     const error = await response.json();
                     console.error('Download error:', error);
                     alert('Error generating PDF: ' + error.error);
-                    downloadWaitbar.classList.add('hidden');
-                    downloadFill.classList.remove('active');
-                    downloadStatus.classList.add('hidden');
                     return;
                 }
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                const originalName = originalFile ? originalFile.name.replace(/\.pdf$/i, '') : 'modified';
-                link.download = `${originalName}_modified.pdf`;
+                link.download = 'modified.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                console.log(`Download initiated: ${link.download}`);
-                downloadWaitbar.classList.add('hidden');
-                downloadFill.classList.remove('active');
-                downloadStatus.classList.add('hidden');
+                console.log('Download initiated');
             } catch (error) {
                 console.error('Download fetch error:', error);
                 alert('Error generating PDF: ' + error.message);
-                clearInterval(downloadInterval);
-                downloadWaitbar.classList.add('hidden');
-                downloadFill.classList.remove('active');
-                downloadStatus.classList.add('hidden');
             }
         });
 
         zoomSlider.addEventListener('input', () => {
             zoomLevel = parseInt(zoomSlider.value);
-            renderPages(previews.length);
+            renderPages();
         });
 
-        function renderPages(totalPages) {
-            console.time('renderPages');
-            console.log(`Starting renderPages: totalPages=${totalPages}, previews.length=${previews.length}, pageOrder=${JSON.stringify(pageOrder)}`);
+        function renderPages() {
             const grid = document.getElementById('page-grid');
-            const pageHeight = (350 * zoomLevel / 100) + 16;
+            const pageHeight = (350 * zoomLevel / 100) + 16; // Adjust height with zoom
             const maxPagesPerColumn = Math.floor(window.innerHeight / pageHeight);
-            const visiblePages = pageOrder.filter(idx => !pagesToDelete.includes(idx) && previews[idx]).length;
+            const visiblePages = pageOrder.filter(idx => !pagesToDelete.includes(idx)).length;
             const columns = Math.max(1, Math.ceil(visiblePages / maxPagesPerColumn));
-            grid.style.gridTemplateColumns = `repeat(${columns}, ${250 * zoomLevel / 100}px)`;
-            grid.style.setProperty('--zoom', zoomLevel / 100);
+            grid.style.gridTemplateColumns = `repeat(${columns}, ${250 * zoomLevel / 100}px)`; // Adjust column width
+            grid.style.setProperty('--zoom', zoomLevel / 100); // Set CSS variable
 
-            // Show processing waitbar immediately
-            requestAnimationFrame(() => {
-                uploadWaitbar.classList.add('hidden');
-                processingWaitbar.classList.remove('hidden');
-                downloadWaitbar.classList.add('hidden');
-                uploadStatus.classList.add('hidden');
-                processingStatus.classList.remove('hidden');
-                downloadStatus.classList.add('hidden');
-                processingFill.classList.add('active');
-                processingFill.style.width = '0%';
-                processingStatus.textContent = `Processing page 0/${visiblePages}...`;
-                // Force repaint
-                processingWaitbar.offsetHeight;
-                console.log(`Processing waitbar shown: visiblePages=${visiblePages}, style.display=${processingWaitbar.style.display}`);
-            });
-
-            const pagesToRender = pageOrder.filter(idx => !pagesToDelete.includes(idx) && previews[idx]).length;
-            if (pagesToRender === 0) {
-                console.log('No pages to render, hiding processing waitbar');
-                requestAnimationFrame(() => {
-                    processingFill.style.width = '100%';
-                    setTimeout(() => {
-                        processingWaitbar.classList.add('hidden');
-                        processingFill.classList.remove('active');
-                        processingStatus.classList.add('hidden');
-                        console.timeEnd('renderPages');
-                    }, 500);
-                });
-                grid.innerHTML = '';
-                return;
-            }
-
-            let loadedImages = 0;
-            const progressPerPage = 100 / pagesToRender;
             grid.innerHTML = '';
-
-            function updateProgress() {
-                loadedImages++;
-                const renderProgress = Math.min(loadedImages * progressPerPage, 100);
-                processingFill.style.width = `${renderProgress}%`;
-                processingStatus.textContent = `Processing page ${loadedImages}/${pagesToRender}...`;
-                console.log(`Progress updated: ${loadedImages}/${pagesToRender}, ${renderProgress}%`);
-                if (loadedImages >= pagesToRender) {
-                    requestAnimationFrame(() => {
-                        const delay = pagesToRender <= 2 ? 500 : 0;
-                        setTimeout(() => {
-                            processingWaitbar.classList.add('hidden');
-                            processingFill.classList.remove('active');
-                            processingStatus.classList.add('hidden');
-                            console.log(`Processing complete: ${loadedImages}/${pagesToRender} images loaded`);
-                            console.timeEnd('renderPages');
-                        }, delay);
-                    });
-                }
-            }
-
-            // Preload images
-            const imageElements = [];
             pageOrder.forEach((idx, i) => {
-                if (!pagesToDelete.includes(idx) && previews[idx]) {
-                    console.log(`Creating image for page ${idx + 1}, base64 length: ${previews[idx].length || 'N/A'}`);
-                    const img = new Image();
-                    img.src = `data:image/png;base64,${previews[idx]}`;
-                    img.alt = `Page ${idx + 1}`;
-                    img.draggable = false; // Prevents browser-native image drag
-                    img.addEventListener('dragstart', (e) => e.preventDefault());
-                    img.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true }); // Prevent Sortable drag trigger
-                    img.onload = () => {
-                        console.log(`Image loaded: Page ${idx + 1}, ${loadedImages + 1}/${pagesToRender}`);
-                        requestAnimationFrame(updateProgress);
-                    };
-                    img.onerror = () => {
-                        console.error(`Failed to load image for page ${idx + 1}`);
-                        requestAnimationFrame(updateProgress);
-                    };
-                    imageElements.push({ idx, img });
+                if (!pagesToDelete.includes(idx)) {
+                    console.log(`Rendering page ${idx + 1}, base64 length: ${previews[idx].length}`);
+                    const div = document.createElement('div');
+                    div.className = 'page-item';
+                    div.dataset.index = idx;
+                    div.innerHTML = `
+                        <img src="data:image/png;base64,${previews[idx]}" alt="Page ${idx + 1}">
+                        <span class="page-number">${idx + 1}</span>
+                        <label class="delete-toggle">
+                            <input type="checkbox" class="delete-checkbox" data-index="${idx}">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    `;
+                    grid.appendChild(div);
                 }
             });
-
-            // Append images incrementally
-            let appendIndex = 0;
-            function appendNextImage() {
-                if (appendIndex >= imageElements.length) {
-                    // Initialize Sortable after all images are appended
-                    // Clean up old Sortable instance
-                    if (sortableInstance) {
-                      sortableInstance.destroy();
-                      sortableInstance = null;
-                    }
-                    sortableInstance = new Sortable(grid, {
-                        animation: 150,
-                        swap: true,
-                        handle: '.page-item', // restrict dragging
-                        filter: '.delete-checkbox',
-                        preventOnFilter: false,
-                        onFilter: (evt) => {
-                        // Manually trigger click
-                        evt.item.querySelector('.delete-checkbox')?.click();
-                        },
-                        onEnd: (evt) => {
-                            const oldIndex = parseInt(evt.item.dataset.index);
-                            const newIndex = evt.to.children[evt.newIndex].dataset.index
-                                ? parseInt(evt.to.children[evt.newIndex].dataset.index)
-                                : parseInt(evt.item.dataset.index);
-                            if (oldIndex === newIndex) return;
-                            console.log(`Reordering: dragged page=${oldIndex + 1}, target page=${newIndex + 1}`);
-                            const oldIdx = pageOrder.indexOf(oldIndex);
-                            const newIdx = pageOrder.indexOf(newIndex);
-                            if (oldIdx === -1 || newIdx === -1) return;
-                            [pageOrder[oldIdx], pageOrder[newIdx]] = [pageOrder[newIdx], pageOrder[oldIdx]];
-                            console.log('Updated pageOrder:', pageOrder);
-                            Array.from(grid.children).forEach((el, i) => {
-                              el.dataset.index = pageOrder[i];
-                            });
+            new Sortable(grid, {
+                animation: 150,
+                swap: true,
+                onEnd: (evt) => {
+                    const oldIndex = parseInt(evt.item.dataset.index);
+                    const newIndex = evt.to.children[evt.newIndex].dataset.index
+                        ? parseInt(evt.to.children[evt.newIndex].dataset.index)
+                        : parseInt(evt.item.dataset.index);
+                    if (oldIndex === newIndex) return;
+                    console.log(`Reordering: dragged page=${oldIndex + 1}, target page=${newIndex + 1}`);
+                    const oldIdx = pageOrder.indexOf(oldIndex);
+                    const newIdx = pageOrder.indexOf(newIndex);
+                    if (oldIdx === -1 || newIdx === -1) return;
+                    [pageOrder[oldIdx], pageOrder[newIdx]] = [pageOrder[newIdx], pageOrder[oldIdx]];
+                    console.log('Updated pageOrder:', pageOrder);
+                    renderPages();
+                    updateDebugState();
+                }
+            });
+            document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    console.log(`Delete checkbox clicked: idx=${idx}`);
+                    if (e.target.checked) {
+                        const pageItem = checkbox.closest('.page-item');
+                        pageItem.classList.add('deleting');
+                        setTimeout(() => {
+                            pagesToDelete.push(idx);
+                            console.log(`Adding idx to pagesToDelete: ${idx}`);
+                            console.log('pagesToDelete after update:', pagesToDelete);
                             renderPages();
                             updateDebugState();
-                        }
-                    });
-
-                    document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
-                        checkbox.addEventListener('change', (e) => {
-                            const idx = parseInt(e.target.dataset.index);
-                            console.log(`Delete checkbox clicked: idx=${idx}`);
-                            if (e.target.checked) {
-                                const pageItem = checkbox.closest('.page-item');
-                                pageItem.classList.add('deleting');
-                                setTimeout(() => {
-                                    pagesToDelete.push(idx);
-                                    console.log(`Adding idx to pagesToDelete: ${idx}`);
-                                    console.log('pagesToDelete after update:', pagesToDelete);
-                                    renderPages();
-                                    updateDebugState();
-                                }, 150); // Reduced delay for mobile
-                            } else {
-                                pagesToDelete = pagesToDelete.filter(i => i !== idx);
-                                console.log(`Removing idx from pagesToDelete: ${idx}`);
-                                console.log('pagesToDelete after update:', pagesToDelete);
-                                renderPages();
-                                updateDebugState();
-                            }
-                        });
-                    });
-                    return;
-                }
-
-                const { idx, img } = imageElements[appendIndex];
-                const div = document.createElement('div');
-                div.className = 'page-item';
-                div.dataset.index = idx;
-                div.innerHTML = `
-                    <span class="page-number">${idx + 1}</span>
-                    <label class="delete-toggle">
-                        <input type="checkbox" class="delete-checkbox" data-index="${idx}">
-                        <span class="toggle-slider"></span>
-                    </label>
-                `;
-                div.insertBefore(img, div.firstChild);
-                grid.appendChild(div);
-                console.log(`Appended page ${idx + 1} to DOM`);
-                appendIndex++;
-                setTimeout(appendNextImage, 0); // Yield to browser
-            }
-
-            requestAnimationFrame(() => {
-                appendNextImage();
+                        }, 300);
+                    } else {
+                        pagesToDelete = pagesToDelete.filter(i => i !== idx);
+                        console.log(`Removing idx from pagesToDelete: ${idx}`);
+                        console.log('pagesToDelete after update:', pagesToDelete);
+                        renderPages();
+                        updateDebugState();
+                    }
+                });
             });
         }
     </script>
