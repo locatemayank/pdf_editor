@@ -190,7 +190,8 @@
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'include' // Ensure cookies are sent
                 });
                 clearInterval(uploadInterval);
                 uploadFill.style.width = '100%';

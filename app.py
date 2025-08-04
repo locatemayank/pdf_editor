@@ -16,7 +16,7 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Prevent caching
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Ensure cookies work on mobile
 app.config['SESSION_COOKIE_SECURE'] = False  # Set to True for HTTPS in production
-CORS(app, supports_credentials=True, origins=["http://10.184.65.74:5000", "https://pdfglide.onrender.com"])  # Adjust origins for your domain
+CORS(app, supports_credentials=True, origins=["http://10.184.65.74:5000", "https://pdfglide.onrender.com"], methods=['POST']) # Adjust origins for your domain
 
 # Function to convert PDF pages to images
 def pdf_to_images(pdf_path):
@@ -75,6 +75,8 @@ def upload():
         return jsonify({'error': 'No PDF file selected'}), 400
     pdf_file = request.files['pdf']
     try:
+        if request.content_type is None or not request.content_type.startswith('multipart/form-data'):
+            return jsonify({'error': 'Content-Type must be multipart/form-data'}), 400
         session_id = str(uuid.uuid4())
         session['session_id'] = session_id
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
