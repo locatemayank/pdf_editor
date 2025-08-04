@@ -287,7 +287,7 @@ h1 {
     display: inline-block;
     width: calc(60px * var(--zoom, 1)); /* Increased from 40px */
     height: calc(30px * var(--zoom, 1)); /* Increased from 20px */
-    touch-action: manipulation; /* Prevent mobile scroll interference */
+
 }
 
 .delete-checkbox {
@@ -327,6 +327,9 @@ h1 {
     transform: translateX(calc(30px * var(--zoom, 1))); /* Adjusted from 20px */
 }
 
+body, html {
+  touch-action: auto; /* or manipulation */
+}
 @keyframes fadeOut {
     from { opacity: 1; transform: scale(1); }
     to { opacity: 0; transform: scale(0.9); }

@@ -90,6 +90,7 @@
         let originalFile = null;
         let previews = [];
         let zoomLevel = 100;
+        let sortableInstance = null;
 
         // Ensure all waitbars and status texts are hidden on load
         document.getElementById('upload-waitbar').classList.add('hidden');
@@ -417,7 +418,12 @@
             function appendNextImage() {
                 if (appendIndex >= imageElements.length) {
                     // Initialize Sortable after all images are appended
-                    new Sortable(grid, {
+                    // Clean up old Sortable instance
+                    if (sortableInstance) {
+                      sortableInstance.destroy();
+                      sortableInstance = null;
+                    }
+                    sortableInstance = new Sortable(grid, {
                         animation: 150,
                         swap: true,
                         onEnd: (evt) => {
@@ -432,6 +438,9 @@
                             if (oldIdx === -1 || newIdx === -1) return;
                             [pageOrder[oldIdx], pageOrder[newIdx]] = [pageOrder[newIdx], pageOrder[oldIdx]];
                             console.log('Updated pageOrder:', pageOrder);
+                            Array.from(grid.children).forEach((el, i) => {
+                              el.dataset.index = pageOrder[i];
+                            });
                             renderPages();
                             updateDebugState();
                         }
