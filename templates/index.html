@@ -149,19 +149,26 @@
             const file = e.dataTransfer.files[0];
             if (file && file.type === 'application/pdf') {
                 fileInput.files = e.dataTransfer.files;
-                handleUpload(file);
+                handleUpload(new File([file], file.name, { type: file.type })); // Clone file
             }
         });
         browseBtn.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) handleUpload(file);
+            if (file) {
+                    handleUpload(file);
+                    fileInput.value = ''; // Clear input to prevent stale references
+                }
         });
 
         async function handleUpload(file) {
             console.time('upload');
-            originalFile = file;
+            originalFile = file ? new File([file], file.name, { type: file.type }) : null; // Clone file to prevent reference issues
+            if (!originalFile) {
+                alert('No file selected. Please choose a PDF file.');
+                return;
+            }
             // Reset all waitbars and status texts
             uploadWaitbar.classList.add('hidden');
             processingWaitbar.classList.add('hidden');
