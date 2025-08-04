@@ -67,8 +67,8 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    if 'pdf' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
+    if 'pdf' not in request.files or request.files['pdf'].filename == '':
+        return jsonify({'error': 'No PDF file selected'}), 400
     pdf_file = request.files['pdf']
     try:
         session_id = str(uuid.uuid4())
