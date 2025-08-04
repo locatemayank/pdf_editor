@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_file, render_template, session
+from flask_cors import CORS  # Added for CORS support
 import PyPDF2
 import io
 import base64
@@ -13,6 +14,9 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key'  # Required for session management
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Prevent caching
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Ensure cookies work on mobile
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True for HTTPS in production
+CORS(app, supports_credentials=True, origins=["http://10.184.65.74:5000", "https://pdfglide.onrender.com"])  # Adjust origins for your domain
 
 # Function to convert PDF pages to images
 def pdf_to_images(pdf_path):
