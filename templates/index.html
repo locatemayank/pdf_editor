@@ -401,6 +401,9 @@
                     const img = new Image();
                     img.src = `data:image/png;base64,${previews[idx]}`;
                     img.alt = `Page ${idx + 1}`;
+                    img.draggable = false; // Prevents browser-native image drag
+                    img.addEventListener('dragstart', (e) => e.preventDefault());
+                    img.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true }); // Prevent Sortable drag trigger
                     img.onload = () => {
                         console.log(`Image loaded: Page ${idx + 1}, ${loadedImages + 1}/${pagesToRender}`);
                         requestAnimationFrame(updateProgress);
