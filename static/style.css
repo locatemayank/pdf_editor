@@ -251,10 +251,12 @@ h1 {
     animation: fadeOut 0.15s ease forwards;
 }
 
-.page-item:hover {
+@media (hover: hover) and (pointer: fine) {
+  .page-item:hover {
     transform: scale(1.02);
     border-color: var(--accent);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .page-item img {
