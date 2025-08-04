@@ -426,6 +426,13 @@
                     sortableInstance = new Sortable(grid, {
                         animation: 150,
                         swap: true,
+                        handle: '.page-item', // restrict dragging
+                        filter: '.delete-checkbox',
+                        preventOnFilter: false,
+                        onFilter: (evt) => {
+                        // Manually trigger click
+                        evt.item.querySelector('.delete-checkbox')?.click();
+                        },
                         onEnd: (evt) => {
                             const oldIndex = parseInt(evt.item.dataset.index);
                             const newIndex = evt.to.children[evt.newIndex].dataset.index
