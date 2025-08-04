@@ -245,6 +245,7 @@ h1 {
     padding: 0.5rem;
     transition: all 0.3s ease;
     width: calc(250px * var(--zoom, 1));
+    touch-action: none; /* Prevent browser gestures */
 }
 
 .page-item.deleting {
@@ -266,6 +267,10 @@ h1 {
     max-height: calc(350px * var(--zoom, 1));
     border-radius: 0.25rem;
     object-fit: contain;
+    pointer-events: none; /* prevent image hijacking */
+    -webkit-user-drag: none;
+    user-select: none;
+    touch-action: manipulation;
 }
 
 .page-number {
@@ -290,7 +295,7 @@ h1 {
     display: inline-block;
     width: calc(60px * var(--zoom, 1)); /* Increased from 40px */
     height: calc(30px * var(--zoom, 1)); /* Increased from 20px */
-
+    pointer-events: auto; /* Ensure toggles still receive touch */
 }
 
 .delete-checkbox {
@@ -316,6 +321,7 @@ h1 {
     background-color: #ccc;
     border-radius: calc(30px * var(--zoom, 1)); /* Adjusted for new height */
     transition: background-color 0.3s, box-shadow 0.3s;
+    pointer-events: auto;
 }
 
 .toggle-slider:before {
@@ -338,9 +344,11 @@ h1 {
 .delete-checkbox:checked + .toggle-slider:before {
     transform: translateX(calc(30px * var(--zoom, 1))); /* Adjusted from 20px */
 }
-
+#page-grid {
+  touch-action: pan-y; /* allow vertical scroll but enable drag */
+}
 body, html {
-  touch-action: auto; /* or manipulation */
+  touch-action: manipulation; /* or manipulation */
 }
 @keyframes fadeOut {
     from { opacity: 1; transform: scale(1); }

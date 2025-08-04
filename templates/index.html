@@ -86,6 +86,7 @@
         let originalFile = null;
         let previews = [];
         let zoomLevel = 100;
+        let sortable = null;
 
         // Theme Toggle
         const themeToggle = document.getElementById('theme-toggle');
@@ -238,7 +239,11 @@
             const columns = Math.max(1, Math.ceil(visiblePages / maxPagesPerColumn));
             grid.style.gridTemplateColumns = `repeat(${columns}, ${250 * zoomLevel / 100}px)`; // Adjust column width
             grid.style.setProperty('--zoom', zoomLevel / 100); // Set CSS variable
-
+            // Destroy previous Sortable instance cleanly
+            if (sortable) {
+                sortable.destroy();
+                sortable = null;
+            }
             grid.innerHTML = '';
             pageOrder.forEach((idx, i) => {
                 if (!pagesToDelete.includes(idx)) {
@@ -246,6 +251,7 @@
                     const div = document.createElement('div');
                     div.className = 'page-item';
                     div.dataset.index = idx;
+                    div.setAttribute('draggable', 'true'); // helps on Android
                     div.innerHTML = `
                         <img src="data:image/png;base64,${previews[idx]}" alt="Page ${idx + 1}">
                         <span class="page-number">${idx + 1}</span>
@@ -257,23 +263,22 @@
                     grid.appendChild(div);
                 }
             });
-            new Sortable(grid, {
+            // Re-initialize Sortable cleanly
+            sortable = new Sortable(grid, {
                 animation: 150,
                 swap: true,
-                onEnd: (evt) => {
-                    const oldIndex = parseInt(evt.item.dataset.index);
-                    const newIndex = evt.to.children[evt.newIndex].dataset.index
-                        ? parseInt(evt.to.children[evt.newIndex].dataset.index)
-                        : parseInt(evt.item.dataset.index);
-                    if (oldIndex === newIndex) return;
-                    console.log(`Reordering: dragged page=${oldIndex + 1}, target page=${newIndex + 1}`);
-                    const oldIdx = pageOrder.indexOf(oldIndex);
-                    const newIdx = pageOrder.indexOf(newIndex);
-                    if (oldIdx === -1 || newIdx === -1) return;
-                    [pageOrder[oldIdx], pageOrder[newIdx]] = [pageOrder[newIdx], pageOrder[oldIdx]];
-                    console.log('Updated pageOrder:', pageOrder);
-                    renderPages();
-                    updateDebugState();
+                filter: '.delete-toggle, .delete-checkbox, .toggle-slider',
+                preventOnFilter: false,
+                onEnd: function (evt) {
+                    const oldIndex = evt.oldIndex;
+                    const newIndex = evt.newIndex;
+                    if (oldIndex !== newIndex) {
+                        const moved = pageOrder.splice(oldIndex, 1)[0];
+                        pageOrder.splice(newIndex, 0, moved);
+                        console.log('Updated pageOrder:', pageOrder);
+                        renderPages(); // trigger re-render
+                        updateDebugState();
+                    }
                 }
             });
             document.querySelectorAll('.delete-checkbox').forEach(checkbox => {
