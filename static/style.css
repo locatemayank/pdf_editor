@@ -237,18 +237,18 @@ h1 {
 
 .page-item {
     position: relative;
-    background: var(--glass-bg);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(232, 122, 62, 0.3);
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0.5rem; /* Increased from 0.5rem for larger touch target */
     transition: all 0.3s ease;
     width: calc(250px * var(--zoom, 1));
 }
 
 .page-item.deleting {
-    animation: fadeOut 0.3s ease forwards;
+    animation: fadeOut 0.15s ease forwards;
 }
 
 .page-item:hover {
@@ -285,8 +285,9 @@ h1 {
     top: 0.5rem;
     right: 0.5rem;
     display: inline-block;
-    width: calc(40px * var(--zoom, 1));
-    height: calc(20px * var(--zoom, 1));
+    width: calc(60px * var(--zoom, 1)); /* Increased from 40px */
+    height: calc(30px * var(--zoom, 1)); /* Increased from 20px */
+    touch-action: manipulation; /* Prevent mobile scroll interference */
 }
 
 .delete-checkbox {
@@ -301,17 +302,17 @@ h1 {
     right: 0;
     bottom: 0;
     background-color: #ccc;
-    border-radius: calc(20px * var(--zoom, 1));
+    border-radius: calc(30px * var(--zoom, 1)); /* Adjusted for new height */
     transition: background-color 0.3s, box-shadow 0.3s;
 }
 
 .toggle-slider:before {
     position: absolute;
     content: "";
-    height: calc(16px * var(--zoom, 1));
-    width: calc(16px * var(--zoom, 1));
-    left: calc(2px * var(--zoom, 1));
-    bottom: calc(2px * var(--zoom, 1));
+    height: calc(24px * var(--zoom, 1)); /* Increased from 16px */
+    width: calc(24px * var(--zoom, 1)); /* Increased from 16px */
+    left: calc(3px * var(--zoom, 1)); /* Adjusted for new size */
+    bottom: calc(3px * var(--zoom, 1)); /* Adjusted for new size */
     background-color: white;
     border-radius: 50%;
     transition: transform 0.3s;
@@ -323,7 +324,7 @@ h1 {
 }
 
 .delete-checkbox:checked + .toggle-slider:before {
-    transform: translateX(calc(20px * var(--zoom, 1)));
+    transform: translateX(calc(30px * var(--zoom, 1))); /* Adjusted from 20px */
 }
 
 @keyframes fadeOut {

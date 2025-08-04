@@ -432,7 +432,7 @@
                             if (oldIdx === -1 || newIdx === -1) return;
                             [pageOrder[oldIdx], pageOrder[newIdx]] = [pageOrder[newIdx], pageOrder[oldIdx]];
                             console.log('Updated pageOrder:', pageOrder);
-                            renderPages(previews.length);
+                            renderPages();
                             updateDebugState();
                         }
                     });
@@ -448,14 +448,14 @@
                                     pagesToDelete.push(idx);
                                     console.log(`Adding idx to pagesToDelete: ${idx}`);
                                     console.log('pagesToDelete after update:', pagesToDelete);
-                                    renderPages(previews.length);
+                                    renderPages();
                                     updateDebugState();
-                                }, 300);
+                                }, 150); // Reduced delay for mobile
                             } else {
                                 pagesToDelete = pagesToDelete.filter(i => i !== idx);
                                 console.log(`Removing idx from pagesToDelete: ${idx}`);
                                 console.log('pagesToDelete after update:', pagesToDelete);
-                                renderPages(previews.length);
+                                renderPages();
                                 updateDebugState();
                             }
                         });
