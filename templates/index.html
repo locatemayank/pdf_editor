@@ -2,20 +2,24 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>PDF Editor</title>
+    <title>Reorder & Delete PDF Pages Online - Free | PDFGlide</title>
+    <meta name="description" content="Easily reorder or delete pages in your PDF files with PDFGlide’s free online tool. Fast, secure, and no downloads required. Try now!">
+    <meta name="keywords" content="reorder PDF pages, delete PDF pages, free PDF editor, online PDF tool, PDFGlide">
+    <meta name="robots" content="index, follow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://pdfglide.onrender.com/reorder-delete">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <main class="container">
-        <h1>PDF Editor</h1>
+        <h1>Reorder & Delete PDF Pages - Free</h1>
 
         <!-- Drag-and-Drop Uploader -->
         <div id="drop-zone" class="drop-zone">
             <p>Drop your PDF here or click to browse</p>
-            <div id="progress-bar" class="progress-bar hidden">
-                <div class="progress-fill"></div>
-            </div>
+
+
             <input type="file" id="pdf-upload" accept="application/pdf">
             <button id="browse-btn" title="Browse Files">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -24,6 +28,10 @@
                     <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
             </button>
+            <div id="upload-status" class="upload-status hidden">
+                Uploading PDF<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+
         </div>
 
         <!-- Buttons -->
@@ -141,10 +149,22 @@
             if (file) handleUpload(file);
         });
 
+        function showUploadStatus() {
+            const statusEl = document.getElementById('upload-status');
+            if (statusEl) statusEl.classList.remove('hidden');
+        }
+
+        function hideUploadStatus() {
+            const statusEl = document.getElementById('upload-status');
+            if (statusEl) statusEl.classList.add('hidden');
+        }
+
         async function handleUpload(file) {
             originalFile = file;
-            progressBar.classList.remove('hidden');
-            progressFill.classList.add('active');
+            showUploadStatus()
+
+            //progressBar.classList.remove('hidden');
+            //progressFill.classList.add('active');
             const formData = new FormData();
             formData.append('pdf', file);
             try {
@@ -170,8 +190,9 @@
                 console.error('Upload error:', error);
                 alert('Error uploading PDF: ' + error.message);
             } finally {
-                progressBar.classList.add('hidden');
-                progressFill.classList.remove('active');
+                //progressBar.classList.add('hidden');
+                //progressFill.classList.remove('active');
+                hideUploadStatus()
             }
         }
 
@@ -253,7 +274,7 @@
                     div.dataset.index = idx;
                     div.setAttribute('draggable', 'true'); // helps on Android
                     div.innerHTML = `
-                        <img src="data:image/png;base64,${previews[idx]}" alt="Page ${idx + 1}">
+                        <img src="data:image/png;base64,${previews[idx]}" alt="Drag and drop PDF to reorder pages">
                         <span class="page-number">${idx + 1}</span>
                         <label class="delete-toggle">
                             <input type="checkbox" class="delete-checkbox" data-index="${idx}">

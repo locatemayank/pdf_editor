@@ -70,6 +70,7 @@ h1 {
     transition: all 0.3s ease;
     animation: pulse 2s infinite ease-in-out;
     position: relative;
+    padding-bottom: 2.5rem; /* Reserve vertical space for upload status */
 }
 
 .drop-zone p {
@@ -111,6 +112,41 @@ h1 {
 .drop-zone button:hover {
     transform: scale(1.1);
     color: var(--primary);
+}
+.upload-status {
+    margin-top: 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    min-height: 1.5rem; /* Prevents shifting layout */
+}
+
+.upload-status .dots span {
+    animation: blink 1.5s infinite;
+    opacity: 0;
+    display: inline-block;
+}
+
+.upload-status .dots span:nth-child(1) {
+    animation-delay: 0s;
+}
+.upload-status .dots span:nth-child(2) {
+    animation-delay: 0.3s;
+}
+.upload-status .dots span:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+@keyframes blink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.upload-status.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .waitbar {
